@@ -97,6 +97,107 @@ If it's the first time your Raspberry runs our program, please make sure that yo
 ### Second and every next run
 If it's not the first time your Raspberry runs our program, just run **setup_tx.sh** and **setup_rx.sh** respectively on the tranceiver and receiver device. If you edited these files before, make sure you commented sections mentioned above.
 
+## Getting GPS to work
+
+### Enable the UART
+To begin, it's essential to acquire and set up a new device tree overlay. Raspberry Pi Engineer PhillE, known as "PhillE" on the forums, has thoughtfully crafted a specialized overlay named pi3-miniuart-bt-overlay.dtb. This file  This overlay is designed to reassign UART ports. We have archived the overlay in zip format and it will need to be uncompressed and copied into the **/boot/overlays** directory on the **SD card**. 
+
+Next we need to edit the /boot/config.txt file by adding the following lines:
+```
+dtparam=spi=on
+dtoverlay=pi3-disable-bt-overlay
+core_freq=250
+enable_uart=1
+force_turbo=1
+```
+Now edit /boot/cmdline.txt by changing the file to the following:
+```
+dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait
+```
+If you've made changes to the cmdline.txt and config.txt files on your computer, insert the SD card back into your Raspberry Pi 3. Boot the Pi to either a network SSH session or desktop, and execute the following commands in a shell window.
+
+To deactivate the onboard Bluetooth, you must prevent hciattach from attempting to utilize the modem through uart0. This action will disable the corresponding systemd service.
+```
+sudo systemctl disable hciuart
+```
+Now edit /lib/systemd/system/hciuart.server and replace ttyAMA0 with ttyS0:
+```
+sudo nano /lib/systemd/system/hciuart.service
+```
+Replace ***"After=dev-serial1.device"*** with ***"After=dev-ttyS0.device"***
+
+Use Ctrl+O to save changes and use Ctrl+X to exit.
+
+You should update the operating system by applying the latest patches using:
+```
+sudo apt-get update
+sudo apt-get upgrade
+sudo reboot
+```
+After your Raspberry Pi 3 completes the reboot process, you should be able to utilize the serial console via the GPIO header at a baud rate of 9600.
+For a brief check of the data being transmitted from the GPS, you can enter the following command and then press CTRL+C to exit:
+```
+sudo cat /dev/ttyS0
+```
+Run the following two commands to stop and disable the tty service:
+```
+ sudo systemctl stop serial-getty@ttyS0.service
+ sudo systemctl disable serial-getty@ttyS0.service
+```
+### Reboot 
+```
+sudo shutdown -r now 
+```
+### Install GPSD
+
+You can opt to directly read the raw data, but it's more convenient to have Linux software present it in a more readable format. Let's explore gpsd, a GPS-handling Daemon that operates in the background.
+To install gpsd, ensure your Pi is connected to the internet, and execute the following commands in the console:
+```
+sudo apt-get install gpsd gpsd-clients
+```
+Newer versions of Raspberry Pi OS, starting from "Jessie" onwards, necessitate the deactivation of a service installed by gpsd. This service employs systemd to listen on a local socket and activate gpsd when clients establish a connection. However, it can create conflicts with manually executed gpsd instances, as outlined in this guide. To disable the gpsd systemd service, execute the following commands:
+```
+sudo systemctl stop gpsd.socket
+sudo systemctl disable gpsd.socket
+```
+
+If there comes a time when you wish to reinstate the default gpsd systemd service, you can use these commands to reactivate it. Keep in mind, however, that the subsequent steps in this guide will no longer be applicable:
+```
+sudo systemctl enable gpsd.socket
+sudo systemctl start gpsd.socket
+```
+Edit /etc/default/gpsd as below:
+```
+sudo nano /etc/default/gpsd
+```
+change it to look like this
+```
+START_DAEMON="true"
+GPSD_OPTIONS="-n"
+DEVICES="/dev/ttyS0"
+USBAUTO="false"
+GPSD_SOCKET="/var/run/gpsd.sock"
+```
+Then reboot. 
+
+### Run gpsd
+```
+sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+```
+
+### Test gpsd
+Remember that the PI needs clear view of the sky for GPS. There is a simple GPS client which you can run to test everything is working: 
+```
+cgps -s 
+```
+
+If you encounter issues where cgps consistently shows 'NO FIX' under status and subsequently terminates after a few seconds, you might need to restart the gpsd service. You can achieve this by executing the following commands:
+```
+ sudo killall gpsd
+ sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+```
+
+
 ## Conclusion & future development
 We highly recommend to experiment and modify both hardware and software. Maybe clear the code by writing your own libraries or change PiCamera to a different sensor. Feel free to do with this project whatever you want. :)
 
