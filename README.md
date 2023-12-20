@@ -186,7 +186,7 @@ sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
 ```
 
 ### Test gpsd
-Remember that the PI needs clear view of the sky for GPS. There is a simple GPS client which you can run to test everything is working: 
+Remember that the PI needs clear view of the sky for GPS. There is a simple GPS client which you can run to test if everything is working: 
 ```
 cgps -s 
 ```
