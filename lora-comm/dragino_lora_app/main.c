@@ -178,12 +178,12 @@ uint32_t  freq = 868100000; // in Mhz! (868.1)
 FILE *plik;
 
 
-char* plik_read = realpath("read.txt", NULL);
+char* plik_read = realpath("read2.txt", NULL);
 char plik_write[] = "write.txt";
 
 
 
-byte packet_to_send_from_plik[30];
+byte packet_to_send_from_plik[60];
 
 
 void die(const char *s)
