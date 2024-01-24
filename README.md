@@ -197,6 +197,28 @@ If you encounter issues where cgps consistently shows 'NO FIX' under status and 
  sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
 ```
 
+## Face detection
+For face detection alghoritm it is necessary to install **OpenCV** module:
+```
+sudo apt install python3-opencv
+```
+Also you need to put `haarcascade_frontalface_default.xml` in the same location as `app.py` file.
+For actuall face detection we are using *Haar Cascades* alghoritm:
+```
+faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
+```
+If you want to play more around this, there is a good read about it [link]([https://link-url-here.org](https://medium.com/analytics-vidhya/haar-cascades-explained-38210e57970d)).
+Shortly there is a quick brief what those parameters mean:
+
+- `gray`: This is the image where you want to detect faces. It's usually a grayscale image, hence the name `gray`.
+
+- `scaleFactor=1.1`: This parameter specifies how much the image size is reduced at each image scale. The value 1.1 means that each next stage is 10% smaller than the previous one.
+
+- `minNeighbors=5`: This parameter specifies how many neighbors each potential face region should have to be considered a face. A higher value results in fewer detections but with higher accuracy.
+
+- `minSize=(30,30)`: This is the minimum object size to be detected. All the objects smaller than this size are ignored.
+
+The `detectMultiScale` function returns a list of rectangles where each rectangle contains a face. Each rectangle is a tuple of four numbers (x, y, width, height), where (x, y) is the top-left corner of the rectangle, and width and height are the dimensions of the rectangle.
 
 ## Conclusion & future development
 We highly recommend to experiment and modify both hardware and software. Maybe clear the code by writing your own libraries or change PiCamera to a different sensor. Feel free to do with this project whatever you want. :)
