@@ -207,7 +207,7 @@ For actuall face detection we are using *Haar Cascades* alghoritm:
 ```
 faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30,30))
 ```
-If you want to play more around this, there is a good read about it [link]([https://link-url-here.org](https://medium.com/analytics-vidhya/haar-cascades-explained-38210e57970d)).
+If you want to play more around this, there is a good read about it [link](https://medium.com/analytics-vidhya/haar-cascades-explained-38210e57970d)
 Shortly there is a quick brief what those parameters mean:
 
 - `gray`: This is the image where you want to detect faces. It's usually a grayscale image, hence the name `gray`.
